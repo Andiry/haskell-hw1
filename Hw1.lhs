@@ -153,8 +153,44 @@ Part 2: Drawing Fractals
 Write a function `sierpinskiCarpet` that displays this figure on the
 screen:
 
-> sierpinskiCarpet :: IO ()
-> sierpinskiCarpet = error "Define me!"
+> fillQuad :: Window -> Int -> Int -> Int -> IO()
+> fillQuad w x y size
+> 	= drawInWindow w (withColor Blue
+>		(polygon [(x, y), (x + size, y), (x + size, y - size), (x, y - size), (x, y)]))
+
+> minSize :: Int
+> minSize = 2
+> xWin, yWin :: Int
+> xWin = 600
+> yWin = 600
+
+> spaceClose :: Window -> IO ()
+> spaceClose w
+>   = do k <- getKey w
+>        if k==' ' || k == '\x0'
+>           then closeWindow w
+>           else spaceClose w
+
+> sierpinskiCarpet :: Window -> Int -> Int -> Int -> IO()
+> sierpinskiCarpet w x y size
+> 	= if size <= minSize
+>	  then fillQuad w x y size
+>	  else let size2 = size `div` 3
+>	    in do sierpinskiCarpet w x y size2
+>	    	  sierpinskiCarpet w (x + size2) y size2
+>	    	  sierpinskiCarpet w (x + size2 * 2) y size2
+>	    	  sierpinskiCarpet w (x + size2 * 2) (y - size2) size2
+>	    	  sierpinskiCarpet w (x + size2 * 2) (y - size2 * 2) size2
+>	    	  sierpinskiCarpet w (x + size2) (y - size2 * 2) size2
+>	    	  sierpinskiCarpet w x (y - size2 * 2) size2 
+>	    	  sierpinskiCarpet w x (y - size2) size2
+
+> main2
+>   = runGraphics (
+>     do w <- openWindow "SierTri" (xWin, yWin)
+>        sierpinskiCarpet w 50 300 256
+>        spaceClose w 
+>     )
 
 Note that you either need to run your program in `SOE/src` or add this
 path to GHC's search path via `-i/path/to/SOE/src/`.
