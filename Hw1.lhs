@@ -119,8 +119,15 @@ The following are the definitions of shapes from Chapter 2 of SOE:
    
    Write a function
    
+> moveDisc :: String -> String -> IO ()
+> moveDisc a b = putStrLn ("Move disc from " ++ a ++ " to " ++ b)
+
 > hanoi :: Int -> String -> String -> String -> IO ()
-> hanoi = error "Define me!"
+> hanoi 0 a b c = putStr ("")
+> hanoi n a b c = do
+>	hanoi (n - 1) a c b
+>	moveDisc a b
+>	hanoi (n - 1) c b a
 
   that, given the number of discs $n$ and peg names $a$, $b$, and $c$,
   where a is the starting peg,
