@@ -71,15 +71,21 @@ The following are the definitions of shapes from Chapter 2 of SOE:
    built with the Polygon constructor.
 
 > rectangle :: Side -> Side -> Shape
-> rectangle = error "Define me!" 
+> rectangle side1 side2 = Polygon[(0.0, 0.0), (0.0, side2), (side1, side2), (side1, 0.0)] 
 
 > rtTriangle :: Side -> Side -> Shape
-> rtTriangle = error "Define me!" 
+> rtTriangle side1 side2 = Polygon[(0.0, 0.0), (0.0, side2), (side1, 0.0)] 
 
 2. Define a function
 
 > sides :: Shape -> Int
-> sides = error "Define me!"
+> sides (Rectangle s1 s2) = 4
+> sides (RtTriangle s1 s2) = 3
+> sides (Ellipse r1 r2) = 42
+> sides (Polygon []) = 0
+> sides (Polygon [_]) = 0
+> sides (Polygon [_, _]) = 0
+> sides (Polygon (v:vs)) = 1 + sides (Polygon (vs))
 
   which returns the number of sides a given shape has.
   For the purposes of this exercise, an ellipse has 42 sides,
