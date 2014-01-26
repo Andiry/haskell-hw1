@@ -93,8 +93,13 @@ The following are the definitions of shapes from Chapter 2 of SOE:
 
 3. Define a function
 
+> biggerPoint :: Float -> Vertex -> Vertex
+> biggerPoint e (f1, f2) = ((f1 * sqrt(e)), (f2 * sqrt(e)))
 > bigger :: Shape -> Float -> Shape
-> bigger = error "Define me!"
+> bigger (Rectangle s1 s2) e = Rectangle (s1 * sqrt(e)) (s2 * sqrt(e))
+> bigger (RtTriangle s1 s2) e = RtTriangle (s1 * sqrt(e)) (s2 * sqrt(e))
+> bigger (Ellipse r1 r2) e = Ellipse (r1 * sqrt(e)) (r2 * sqrt(e))
+> bigger (Polygon vs) e = Polygon (map (biggerPoint e) vs)
 
   that takes a shape `s` and expansion factor `e` and returns
   a shape which is the same as (i.e., similar to in the geometric sense)
