@@ -56,7 +56,12 @@ The following are the definitions of shapes from Chapter 2 of SOE:
 >            | RtTriangle Side Side
 >            | Polygon [Vertex]
 >            deriving Show
-> 
+>
+> myName = "Jian Xu"
+> myEmail = "jix024@cs.ucsd.edu"
+> mySID = "A53026658"
+
+ 
 > type Radius = Float 
 > type Side   = Float
 > type Vertex = (Float, Float)
