@@ -218,37 +218,52 @@ First, a warmup:
    they are passed contain at least one element.
 
 > lengthNonRecrusive :: [a] -> Int
-> lengthNonRecrusive = error "Define me!"
+> lengthNonRecrusive xs = foldl len 0 xs
+>		where len s _ = s + 1 
 
 > doubleEach :: [Int] -> [Int]
-> doubleEach = error "Define me!"
+> doubleEach [] = []
+> doubleEach (x:xs) = (x * 2) : doubleEach xs
 
 > doubleEachNonRecursive :: [Int] -> [Int]
-> doubleEachNonRecursive = error "Define me!"
+> doubleEachNonRecursive xs = map d xs
+>			where d x = x * 2
 
 > pairAndOne :: [Int] -> [(Int, Int)]
-> pairAndOne = error "Define me!"
+> pairAndOne [] = []
+> pairAndOne (x:xs) = (x, x + 1) : pairAndOne xs
 
 > pairAndOneNonRecursive :: [Int] -> [(Int, Int)]
-> pairAndOneNonRecursive = error "Define me!"
+> pairAndOneNonRecursive xs = map p xs
+>			where p x = (x, x + 1)
 
 > addEachPair :: [(Int, Int)] -> [Int]
-> addEachPair = error "Define me!" 
+> addEachPair [] = [] 
+> addEachPair (x:xs) = (fst x + snd x) : addEachPair xs
 
 > addEachPairNonRecursive :: [(Int, Int)] -> [Int]
-> addEachPairNonRecursive = error "Define me!" 
+> addEachPairNonRecursive xs = map a xs
+>			where a x = fst x + snd x 
 
 > minList :: [Int] -> Int
-> minList = error "Define me!"
+> minList [] = 0
+> minList (x:xs) = if x <= minList xs
+>			then x
+>			else minList xs
 
 > minListNonRecursive :: [Int] -> Int
-> minListNonRecursive = error "Define me!"
+> minListNonRecursive xs = foldl min 0 xs
+>			where min a b = if a <= b then a else b 
 
 > maxList :: [Int] -> Int
-> maxList = error "Define me!"
+> maxList [] = 0
+> maxList (x:xs) = if x >= maxList xs
+>			then x
+>			else maxList xs
 
 > maxListNonRecursive :: [Int] -> Int
-> maxListNonRecursive = error "Define me!"
+> maxListNonRecursive xs = foldl max 0 xs
+>			where max a b = if a >= b then a else b 
 
 > data Tree a = Leaf a | Branch (Tree a) (Tree a)
 >               deriving (Show, Eq)
