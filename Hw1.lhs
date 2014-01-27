@@ -269,19 +269,24 @@ First, a warmup:
 >               deriving (Show, Eq)
 
 > fringe :: Tree a -> [a]
-> fringe = error "Define me!"
+> fringe (Leaf x) = [x]
+> fringe (Branch t1 t2) = fringe t1 ++ fringe t2
 
 > treeSize :: Tree a -> Int
-> treeSize = error "Define me!"
+> treeSize (Leaf x) = 1
+> treeSize (Branch t1 t2) = treeSize t1 + treeSize t2
 
 > treeHeight :: Tree a -> Int
-> treeHeight = error "Define me!"
+> treeHeight (Leaf x) = 0
+> treeHeight (Branch t1 t2) = 1 + max (treeHeight t1) (treeHeight t2)
 
 > data InternalTree a = ILeaf | IBranch a (InternalTree a) (InternalTree a)
 >                       deriving (Show, Eq)
 
 > takeTree :: Int -> InternalTree a -> InternalTree a
-> takeTree = error "Define me!"
+> takeTree 0 (ILeaf) = ILeaf
+
+takeTree n (IBranch a t1 t2) = a
 
 > takeTreeWhile :: (a -> Bool) -> InternalTree a -> InternalTree a
 > takeTreeWhile = error "Define me!"
@@ -378,7 +383,7 @@ yields the HTML speciﬁed above (but with no whitespace except what's
 in the textual data in the original XML).
 
 > formatPlay :: SimpleXML -> SimpleXML
-> formatPlay xml = PCDATA "WRITE ME!"
+> formatPlay xml = xml
 
 The main action that we've provided below will use your function to
 generate a ﬁle `dream.html` from the sample play. The contents of this
