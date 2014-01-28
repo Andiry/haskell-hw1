@@ -422,12 +422,13 @@ in the textual data in the original XML).
 > getTitle (PCDATA s) = PCDATA s
 > getTitle (Element title (name:tail)) = name
 
-> processPlay :: SimpleXML -> [SimpleXML]
-> processPlay (PCDATA a) = [PCDATA a]
-> processPlay (Element name (title:(persona:acts))) = (Element "h1" [getTitle title]) : ((processPersona persona) ++ (processActs acts)) 
+> processPlay :: [SimpleXML] -> [SimpleXML]
+> processPlay [] = []
+> processPlay (PCDATA a:tail) = [PCDATA a] ++ processPlay tail
+> processPlay (Element name (title:(persona:acts)) : tail) = (Element "h1" [getTitle title]) : ((processPersona persona) ++ (processActs acts) ++ processPlay tail) 
 
 > formatPlay :: SimpleXML -> SimpleXML
-> formatPlay xml = Element "html" [(Element "body" (processPlay xml))]  
+> formatPlay xml = Element "html" [(Element "body" (processPlay [xml]))]  
 
 The main action that we've provided below will use your function to
 generate a ﬁle `dream.html` from the sample play. The contents of this
