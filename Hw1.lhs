@@ -382,79 +382,58 @@ representing a play to another XML structure that, when printed,
 yields the HTML speciﬁed above (but with no whitespace except what's
 in the textual data in the original XML).
 
-> processTag1 :: [SimpleXML] -> [SimpleXML]
-> processTag1 [] = [] 
-> processTag1 (PCDATA s:xs) = (PCDATA s) : [Element "br" []]
-> processTag1 (Element tag body:xs) = (map formatPlay (body ++ xs ++[Element "br" []]))
-
-
-> processActors :: [SimpleXML] -> [SimpleXML]
-> processActors [] = []
-> processActors (PCDATA a:actors) = (PCDATA a : (Element "br" [] : processActors actors))
-> processActors ((Element name tail):actors) = processActors tail ++ processActors actors 
-
-> processPersona :: SimpleXML -> [SimpleXML]
-> processPersona (PCDATA a) = []
-> processPersona (Element name persona) = (Element "h2" [PCDATA "Dramatis Personae"]) : processActors persona 
-
-> processSpeech :: [SimpleXML] -> [SimpleXML]
-> processSpeech (Element name (first:rest):tail) | name == "SPEAKER" = [(Element "b" [first]), (Element "br" [])] ++ processSpeech tail
->						 | name == "LINE" = [first, Element "br" []] ++ processSpeech tail
->						 | True = []
-> processSpeech (PCDATA s:tail) = []
-> processSpeech [] = []
-
-> processSpeeches :: [SimpleXML] -> [SimpleXML]
-> processSpeeches ((Element speech lines):tail) = processSpeech lines ++ processSpeeches tail
-> processSpeeches [] = []
-
-> processScenes :: [SimpleXML] -> [SimpleXML]
-> processScenes [] = []
-> processScenes (Element scene (title:speeches) : tail) = (Element "h3" [getTitle title]) : (processSpeeches speeches ++ processScenes tail)
-> processScenes (PCDATA s:tail) = processScenes tail
-
-> processActs :: [SimpleXML] -> [SimpleXML]
-> processActs [] = []
-> processActs (Element act (title:scenes) : tail) = (Element "h2" [getTitle title]) : (processScenes scenes ++ processActs tail)
-> processActs (PCDATA s:tail) = processActs tail
-
-> getTitle :: SimpleXML -> SimpleXML
-> getTitle (PCDATA s) = PCDATA s
-> getTitle (Element title (name:tail)) = name
+process TITLE
 
 > processTitle :: SimpleXML -> Int -> SimpleXML
 > processTitle (PCDATA s) layer = Element ("h" ++ show layer) [PCDATA s]
-> processTitle (Element title (name:tail)) layer = Element ("h" ++ show layer) [name]
+> processTitle (Element title (name : tail)) layer = Element ("h" ++ show layer) [name]
+
+process PERSONAs and LINEs
+
+> processPL :: [SimpleXML] -> [SimpleXML]
+> processPL [] = []
+> processPL (PCDATA a : tail) = (PCDATA a) : (Element "br" [] : processPL tail)
+> processPL (Element name pl : tail) = processPL pl ++ processPL tail
+
+process SPEAKER
+
+> processSpeaker :: SimpleXML -> [SimpleXML]
+> processSpeaker (PCDATA s) = Element "b" [PCDATA s] : [Element "br" []]
+> processSpeaker (Element title (name : tail)) = 
+> 		Element "b" [name] : [Element "br" []]
+
+process PERSONAE
+
+> processPAE :: SimpleXML -> [SimpleXML]
+> processPAE (PCDATA a) = [PCDATA ""]
+> processPAE (Element name tail) = Element "h2" [PCDATA "Dramatis Personae"] : processPL tail
+
+process ACTs, SCENEs and SPEECHs
 
 > processRealContent :: [SimpleXML] -> Int -> [SimpleXML]
 > processRealContent [] layer = []
 > processRealContent (s : tail) layer = processLayer s (layer + 1) ++ processRealContent tail layer
 
+process each layer without the TITLE part
+
 > processContent :: [SimpleXML] -> Int -> [SimpleXML]
 > processContent [] layer = []
 > processContent (s : tail) layer = 
 >	 if layer == 1 then processPAE s ++ processRealContent tail layer
->	 else processRealContent (s: tail) layer
+>	 else if layer == 4 then processPL (s : tail)
+>	 else processRealContent (s : tail) layer
 
-> processPAE :: SimpleXML -> [SimpleXML]
-> processPAE (PCDATA a) = [PCDATA "DRAA"]
-> processPAE (Element name (persona : tail)) = [PCDATA "Dramatis Personae"]
+Layer 1 PLAY   = TITLE : PERSONAE : ACTs
+Layer 2 ACT    = TITLE : SCENEs
+Layer 3 SCENE  = TITLE : SPEECHs
+Layer 4 SPEECH = SPEAKER : LINEs
 
 > processLayer :: SimpleXML -> Int -> [SimpleXML]
 > processLayer (PCDATA a) layer = [PCDATA a]
 > processLayer (Element _title (title : tail)) layer =
->	 processTitle title layer : processContent tail layer
+>	 if layer < 4 then processTitle title layer : processContent tail layer
+>	 else processSpeaker title ++ processContent tail layer
 
-	 if layer == 1 then processTitle title layer : (processPAE personae : processContent tail layer)
-	 else processTitle title layer : processContent (personae : tail) layer
-
- processPlay :: [SimpleXML] -> [SimpleXML]
- processPlay [] = []
- processPlay (PCDATA a : tail) = [PCDATA a] ++ processPlay tail
- processPlay (Element name (body : tail)) = processLayer body 1 ++ processPlay tail 
-
-processPlay (Element name body : tail) = processByLayer (Element name body 1)"h1" [getTitle title]) : ((processPersona persona) ++ (processActs acts) ++ processPlay tail)
- 
 > formatPlay :: SimpleXML -> SimpleXML
 > formatPlay xml = Element "html" [(Element "body" (processLayer xml 1))]  
 
