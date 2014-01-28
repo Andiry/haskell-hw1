@@ -382,10 +382,52 @@ representing a play to another XML structure that, when printed,
 yields the HTML speciﬁed above (but with no whitespace except what's
 in the textual data in the original XML).
 
+> processTag1 :: [SimpleXML] -> [SimpleXML]
+> processTag1 [] = [] 
+> processTag1 (PCDATA s:xs) = (PCDATA s) : [Element "br" []]
+> processTag1 (Element tag body:xs) = (map formatPlay (body ++ xs ++[Element "br" []]))
+
+
+> processActors :: [SimpleXML] -> [SimpleXML]
+> processActors [] = []
+> processActors (PCDATA a:actors) = (PCDATA a : (Element "br" [] : processActors actors))
+> processActors ((Element name tail):actors) = processActors tail ++ processActors actors 
+
+> processPersona :: SimpleXML -> [SimpleXML]
+> processPersona (PCDATA a) = []
+> processPersona (Element name persona) = (Element "h2" [PCDATA "Dramatis Personae"]) : processActors persona 
+
+> processSpeech :: [SimpleXML] -> [SimpleXML]
+> processSpeech (Element name (first:rest):tail) | name == "SPEAKER" = [(Element "b" [first]), (Element "br" [])] ++ processSpeech tail
+>						 | name == "LINE" = [first, Element "br" []] ++ processSpeech tail
+>						 | True = []
+> processSpeech (PCDATA s:tail) = []
+> processSpeech [] = []
+
+> processSpeeches :: [SimpleXML] -> [SimpleXML]
+> processSpeeches ((Element speech lines):tail) = processSpeech lines ++ processSpeeches tail
+> processSpeeches [] = []
+
+> processScenes :: [SimpleXML] -> [SimpleXML]
+> processScenes [] = []
+> processScenes (Element scene (title:speeches) : tail) = (Element "h3" [getTitle title]) : (processSpeeches speeches ++ processScenes tail)
+> processScenes (PCDATA s:tail) = processScenes tail
+
+> processActs :: [SimpleXML] -> [SimpleXML]
+> processActs [] = []
+> processActs (Element act (title:scenes) : tail) = (Element "h2" [getTitle title]) : (processScenes scenes ++ processActs tail)
+> processActs (PCDATA s:tail) = processActs tail
+
+> getTitle :: SimpleXML -> SimpleXML
+> getTitle (PCDATA s) = PCDATA s
+> getTitle (Element title (name:tail)) = name
+
+> processPlay :: SimpleXML -> [SimpleXML]
+> processPlay (PCDATA a) = [PCDATA a]
+> processPlay (Element name (title:(persona:acts))) = (Element "h1" [getTitle title]) : ((processPersona persona) ++ (processActs acts)) 
+
 > formatPlay :: SimpleXML -> SimpleXML
-> formatPlay (PCDATA s) = PCDATA s
-> formatPlay (Element tag []) = PCDATA ""
-> formatPlay (Element tag body) = Element "" (map formatPlay body)
+> formatPlay xml = Element "html" [(Element "body" (processPlay xml))]  
 
 The main action that we've provided below will use your function to
 generate a ﬁle `dream.html` from the sample play. The contents of this
