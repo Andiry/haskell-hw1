@@ -383,7 +383,9 @@ yields the HTML speciﬁed above (but with no whitespace except what's
 in the textual data in the original XML).
 
 > formatPlay :: SimpleXML -> SimpleXML
-> formatPlay xml = xml
+> formatPlay (PCDATA s) = PCDATA s
+> formatPlay (Element tag []) = PCDATA ""
+> formatPlay (Element tag body) = Element "" (map formatPlay body)
 
 The main action that we've provided below will use your function to
 generate a ﬁle `dream.html` from the sample play. The contents of this
