@@ -201,13 +201,26 @@ Also, the organization of SOE has changed a bit, so that now you use
    own design.  Be creative!  The only constraint is that it shows some
    pattern of recursive self-similarity.
 
- fillTri :: Window -> Float -> Float -> Float -> IO()
- fillTri w x y size
- 	= drawInWindow w (withColor Blue
-		(polygon [(x, y), (x + size, y), (x + size `div` 2, y - size * sqrt(3) `div` 2), (x, y)]))
+> fillTri :: Window -> Int -> Int -> Int -> IO()
+> fillTri w x y size
+> 	= drawInWindow w (withColor Blue
+>		(polygon [(x, y), (x + size, y), (x + size `div` 2, y - size), (x, y)]))
+
+> drawFractal w x y size
+> 	= if size <= 4
+>	  then fillTri w x y size
+>	  else let size2 = size `div` 2
+>	    in do drawFractal w x y size2
+>	    	  drawFractal w (x + size2) y size2
+>	    	  drawFractal w (x + size2 `div` 2) (y - size2) size2
 
 > myFractal :: IO ()
-> myFractal = error "Define me!"
+> myFractal
+>   = runGraphics (
+>     do w <- openWindow "My Fractal" (xWin, yWin)
+>        drawFractal w 50 300 256
+>        spaceClose w 
+>     )
 
 Part 3: Transforming XML Documents
 ----------------------------------
