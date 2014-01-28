@@ -422,13 +422,27 @@ in the textual data in the original XML).
 > getTitle (PCDATA s) = PCDATA s
 > getTitle (Element title (name:tail)) = name
 
-> processPlay :: [SimpleXML] -> [SimpleXML]
-> processPlay [] = []
-> processPlay (PCDATA a:tail) = [PCDATA a] ++ processPlay tail
-> processPlay (Element name (title:(persona:acts)) : tail) = (Element "h1" [getTitle title]) : ((processPersona persona) ++ (processActs acts) ++ processPlay tail) 
+> processTitle :: SimpleXML -> Int -> SimpleXML
+> processTitle (PCDATA s) layer = Element ("h" ++ show layer) [PCDATA s]
+> processTitle (Element title (name:tail)) layer = Element ("h" ++ show layer) [name]
 
+> processContent :: [SimpleXML] -> Int -> [SimpleXML]
+> processContent [] layer = []
+> processContent (s : tail) layer = processLayer s (layer + 1) ++ processContent tail layer
+
+> processLayer :: SimpleXML -> Int -> [SimpleXML]
+> processLayer (PCDATA a) layer = [PCDATA a]
+> processLayer (Element _title (title : tail)) layer = processTitle title layer : processContent tail layer
+
+ processPlay :: [SimpleXML] -> [SimpleXML]
+ processPlay [] = []
+ processPlay (PCDATA a : tail) = [PCDATA a] ++ processPlay tail
+ processPlay (Element name (body : tail)) = processLayer body 1 ++ processPlay tail 
+
+processPlay (Element name body : tail) = processByLayer (Element name body 1)"h1" [getTitle title]) : ((processPersona persona) ++ (processActs acts) ++ processPlay tail)
+ 
 > formatPlay :: SimpleXML -> SimpleXML
-> formatPlay xml = Element "html" [(Element "body" (processPlay [xml]))]  
+> formatPlay xml = Element "html" [(Element "body" (processLayer xml 1))]  
 
 The main action that we've provided below will use your function to
 generate a ﬁle `dream.html` from the sample play. The contents of this
