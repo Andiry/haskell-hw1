@@ -426,13 +426,27 @@ in the textual data in the original XML).
 > processTitle (PCDATA s) layer = Element ("h" ++ show layer) [PCDATA s]
 > processTitle (Element title (name:tail)) layer = Element ("h" ++ show layer) [name]
 
+> processRealContent :: [SimpleXML] -> Int -> [SimpleXML]
+> processRealContent [] layer = []
+> processRealContent (s : tail) layer = processLayer s (layer + 1) ++ processRealContent tail layer
+
 > processContent :: [SimpleXML] -> Int -> [SimpleXML]
 > processContent [] layer = []
-> processContent (s : tail) layer = processLayer s (layer + 1) ++ processContent tail layer
+> processContent (s : tail) layer = 
+>	 if layer == 1 then processPAE s ++ processRealContent tail layer
+>	 else processRealContent (s: tail) layer
+
+> processPAE :: SimpleXML -> [SimpleXML]
+> processPAE (PCDATA a) = [PCDATA "DRAA"]
+> processPAE (Element name (persona : tail)) = [PCDATA "Dramatis Personae"]
 
 > processLayer :: SimpleXML -> Int -> [SimpleXML]
 > processLayer (PCDATA a) layer = [PCDATA a]
-> processLayer (Element _title (title : tail)) layer = processTitle title layer : processContent tail layer
+> processLayer (Element _title (title : tail)) layer =
+>	 processTitle title layer : processContent tail layer
+
+	 if layer == 1 then processTitle title layer : (processPAE personae : processContent tail layer)
+	 else processTitle title layer : processContent (personae : tail) layer
 
  processPlay :: [SimpleXML] -> [SimpleXML]
  processPlay [] = []
