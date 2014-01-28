@@ -161,8 +161,8 @@ screen:
 > minSize :: Int
 > minSize = 2
 > xWin, yWin :: Int
-> xWin = 600
-> yWin = 600
+> xWin = 400
+> yWin = 400
 
 > spaceClose :: Window -> IO ()
 > spaceClose w
@@ -171,24 +171,24 @@ screen:
 >           then closeWindow w
 >           else spaceClose w
 
-> sierpinskiCarpet :: Window -> Int -> Int -> Int -> IO()
-> sierpinskiCarpet w x y size
+> drawSierpinskiCarpet w x y size
 > 	= if size <= minSize
 >	  then fillQuad w x y size
 >	  else let size2 = size `div` 3
->	    in do sierpinskiCarpet w x y size2
->	    	  sierpinskiCarpet w (x + size2) y size2
->	    	  sierpinskiCarpet w (x + size2 * 2) y size2
->	    	  sierpinskiCarpet w (x + size2 * 2) (y - size2) size2
->	    	  sierpinskiCarpet w (x + size2 * 2) (y - size2 * 2) size2
->	    	  sierpinskiCarpet w (x + size2) (y - size2 * 2) size2
->	    	  sierpinskiCarpet w x (y - size2 * 2) size2 
->	    	  sierpinskiCarpet w x (y - size2) size2
+>	    in do drawSierpinskiCarpet w x y size2
+>	    	  drawSierpinskiCarpet w (x + size2) y size2
+>	    	  drawSierpinskiCarpet w (x + size2 * 2) y size2
+>	    	  drawSierpinskiCarpet w (x + size2 * 2) (y - size2) size2
+>	    	  drawSierpinskiCarpet w (x + size2 * 2) (y - size2 * 2) size2
+>	    	  drawSierpinskiCarpet w (x + size2) (y - size2 * 2) size2
+>	    	  drawSierpinskiCarpet w x (y - size2 * 2) size2 
+>	    	  drawSierpinskiCarpet w x (y - size2) size2
 
-> main2
+> sierpinskiCarpet :: IO ()
+> sierpinskiCarpet
 >   = runGraphics (
->     do w <- openWindow "SierTri" (xWin, yWin)
->        sierpinskiCarpet w 50 300 256
+>     do w <- openWindow "Sierpinski Carpet" (xWin, yWin)
+>        drawSierpinskiCarpet w 50 300 256
 >        spaceClose w 
 >     )
 
@@ -200,6 +200,11 @@ Also, the organization of SOE has changed a bit, so that now you use
 2. Write a function `myFractal` which draws a fractal pattern of your
    own design.  Be creative!  The only constraint is that it shows some
    pattern of recursive self-similarity.
+
+ fillTri :: Window -> Float -> Float -> Float -> IO()
+ fillTri w x y size
+ 	= drawInWindow w (withColor Blue
+		(polygon [(x, y), (x + size, y), (x + size `div` 2, y - size * sqrt(3) `div` 2), (x, y)]))
 
 > myFractal :: IO ()
 > myFractal = error "Define me!"
@@ -382,8 +387,6 @@ representing a play to another XML structure that, when printed,
 yields the HTML speciﬁed above (but with no whitespace except what's
 in the textual data in the original XML).
 
-process TITLE
-
 > processTitle :: SimpleXML -> Int -> SimpleXML
 > processTitle (PCDATA s) layer = Element ("h" ++ show layer) [PCDATA s]
 > processTitle (Element title (name : tail)) layer = Element ("h" ++ show layer) [name]
@@ -395,14 +398,10 @@ process PERSONAs and LINEs
 > processPL (PCDATA a : tail) = (PCDATA a) : (Element "br" [] : processPL tail)
 > processPL (Element name pl : tail) = processPL pl ++ processPL tail
 
-process SPEAKER
-
 > processSpeaker :: SimpleXML -> [SimpleXML]
 > processSpeaker (PCDATA s) = Element "b" [PCDATA s] : [Element "br" []]
 > processSpeaker (Element title (name : tail)) = 
 > 		Element "b" [name] : [Element "br" []]
-
-process PERSONAE
 
 > processPAE :: SimpleXML -> [SimpleXML]
 > processPAE (PCDATA a) = [PCDATA ""]
@@ -413,8 +412,6 @@ process ACTs, SCENEs and SPEECHs
 > processRealContent :: [SimpleXML] -> Int -> [SimpleXML]
 > processRealContent [] layer = []
 > processRealContent (s : tail) layer = processLayer s (layer + 1) ++ processRealContent tail layer
-
-process each layer without the TITLE part
 
 > processContent :: [SimpleXML] -> Int -> [SimpleXML]
 > processContent [] layer = []
