@@ -42,6 +42,11 @@ We declare that this is the Hw1 module and import some libraries:
 > import Play
 > import XMLTypes
 
+> myName = "Jian Xu"
+> myEmail = "jix024@cs.ucsd.edu"
+> mySID = "A53026658"
+
+
 Part 1: Defining and Manipulating Shapes
 ----------------------------------------
 
@@ -56,11 +61,6 @@ The following are the definitions of shapes from Chapter 2 of SOE:
 >            | RtTriangle Side Side
 >            | Polygon [Vertex]
 >            deriving Show
->
-> myName = "Jian Xu"
-> myEmail = "jix024@cs.ucsd.edu"
-> mySID = "A53026658"
-
  
 > type Radius = Float 
 > type Side   = Float
@@ -85,6 +85,7 @@ The following are the definitions of shapes from Chapter 2 of SOE:
 > sides (Polygon []) = 0
 > sides (Polygon [_]) = 0
 > sides (Polygon [_, _]) = 0
+> sides (Polygon [_, _, _]) = 3
 > sides (Polygon (v:vs)) = 1 + sides (Polygon (vs))
 
   which returns the number of sides a given shape has.
@@ -265,23 +266,23 @@ First, a warmup:
 
 > minList :: [Int] -> Int
 > minList [] = 0
+> minList [x] = x
 > minList (x:xs) = if x <= minList xs
 >			then x
 >			else minList xs
 
 > minListNonRecursive :: [Int] -> Int
-> minListNonRecursive xs = foldl min 0 xs
->			where min a b = if a <= b then a else b 
+> minListNonRecursive (x:xs) = foldl min x xs
 
 > maxList :: [Int] -> Int
 > maxList [] = 0
+> maxList [x] = x
 > maxList (x:xs) = if x >= maxList xs
 >			then x
 >			else maxList xs
 
 > maxListNonRecursive :: [Int] -> Int
-> maxListNonRecursive xs = foldl max 0 xs
->			where max a b = if a >= b then a else b 
+> maxListNonRecursive (x:xs) = foldl max x xs
 
 > data Tree a = Leaf a | Branch (Tree a) (Tree a)
 >               deriving (Show, Eq)
@@ -302,17 +303,22 @@ First, a warmup:
 >                       deriving (Show, Eq)
 
 > takeTree :: Int -> InternalTree a -> InternalTree a
-> takeTree 0 (ILeaf) = ILeaf
+> takeTree n (ILeaf) = ILeaf
+> takeTree n (IBranch x c1 c2) | (n > 0) = (IBranch x (takeTree (n-1) c1) (takeTree (n-1) c2))
+>                              | True = (ILeaf)
 
 takeTree n (IBranch a t1 t2) = a
 
 > takeTreeWhile :: (a -> Bool) -> InternalTree a -> InternalTree a
-> takeTreeWhile = error "Define me!"
+> takeTreeWhile f ILeaf = ILeaf
+> takeTreeWhile f (IBranch a c1 c2) | (f a) = (IBranch a (takeTreeWhile f c1) (takeTreeWhile f c2))
+>                                   | True = ILeaf
  
 Write the function map in terms of foldr:
 
 > myMap :: (a -> b) -> [a] -> [b]
-> myMap = error "Define me!"
+> myMap f [] = []
+> myMap f (x:xs) = foldr (\x xs -> (f x) : xs) [] (x:xs)
 
 The rest of this assignment involves transforming XML documents.
 To keep things simple, we will not deal with the full generality of XML,
